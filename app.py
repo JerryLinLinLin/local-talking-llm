@@ -10,28 +10,38 @@ from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 from langchain_community.llms import Ollama
 from tts import TextToSpeechService
+import nltk
 
 console = Console()
-stt = whisper.load_model("base.en")
+stt = whisper.load_model("base")
 tts = TextToSpeechService()
 
-template = """
-You are a helpful and friendly AI assistant. You are polite, respectful, and aim to provide concise responses of less 
-than 20 words.
+try:
+    nltk.data.find('tokenizers/punkt')
+    print("The 'punkt' tokenizer is already downloaded.")
+except LookupError:
+    print("The 'punkt' tokenizer is not found, downloading now...")
+    nltk.download('punkt')
+    print("Download complete.")
 
-The conversation transcript is as follows:
+template = """
+假设 你是個樂於助人且友善的猫猫占卜師和算命师。 您有禮貌、尊重他人，並致力於提供簡潔的答复
+您的回覆不要超過 40 個字。您的回覆的每句话结尾需要加上语气词“喵”。不要回答其他人。 不要重複指示
+
+談話實錄如下：
 {history}
 
-And here is the user's follow-up: {input}
+這是使用者的後續操作：{input}
 
-Your response:
+假设你是個樂於助人且友善的猫猫占卜師和算命师。
+您的回答（您的回答不要超過 40 個字。保持簡潔。您的回覆的每句话结尾需要加上语气词“喵”。不要回答其他。不要重複說明, 主观意图）：
 """
 PROMPT = PromptTemplate(input_variables=["history", "input"], template=template)
 chain = ConversationChain(
     prompt=PROMPT,
     verbose=False,
     memory=ConversationBufferMemory(ai_prefix="Assistant:"),
-    llm=Ollama(),
+    llm=Ollama(model="qwen:7b"),
 )
 
 
@@ -137,6 +147,7 @@ if __name__ == "__main__":
 
                 with console.status("Generating response...", spinner="earth"):
                     response = get_llm_response(text)
+                with console.status("Generating voice..."):
                     sample_rate, audio_array = tts.long_form_synthesize(response)
 
                 console.print(f"[cyan]Assistant: {response}")

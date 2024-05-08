@@ -20,11 +20,11 @@ class TextToSpeechService:
             Defaults to "cuda" if available, otherwise "cpu".
         """
         self.device = device
-        self.processor = AutoProcessor.from_pretrained("suno/bark-small")
-        self.model = BarkModel.from_pretrained("suno/bark-small")
+        self.processor = AutoProcessor.from_pretrained("suno/bark")
+        self.model = BarkModel.from_pretrained("suno/bark")
         self.model.to(self.device)
 
-    def synthesize(self, text: str, voice_preset: str = "v2/en_speaker_1"):
+    def synthesize(self, text: str, voice_preset: str = "v2/zh_speaker_9"):
         """
         Synthesizes audio from the given text using the specified voice preset.
 
@@ -45,7 +45,7 @@ class TextToSpeechService:
         sample_rate = self.model.generation_config.sample_rate
         return sample_rate, audio_array
 
-    def long_form_synthesize(self, text: str, voice_preset: str = "v2/en_speaker_1"):
+    def long_form_synthesize(self, text: str, voice_preset: str = "v2/zh_speaker_9"):
         """
         Synthesizes audio from the given long-form text using the specified voice preset.
 
