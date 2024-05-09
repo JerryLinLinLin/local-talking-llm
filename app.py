@@ -11,10 +11,17 @@ from langchain.prompts import PromptTemplate
 from langchain_community.llms import Ollama
 from tts import TextToSpeechService
 import nltk
+import edge_tts
+from playsound import playsound
+import os
+from pydub import AudioSegment
 
 console = Console()
 stt = whisper.load_model("base")
 tts = TextToSpeechService()
+
+BARK_TTS_ENABLED = False
+EDGE_TTS_VOICE = "zh-TW-HsiaoYuNeural"
 
 try:
     nltk.data.find('tokenizers/punkt')
@@ -25,8 +32,28 @@ except LookupError:
     print("Download complete.")
 
 template = """
-假设 你是個猫猫占卜師和算命师。名字叫佩奇。是ENTJ-T人格。 您並致力於提供簡潔的答复
-您的回覆不要超過 40 個字。您的回覆的每句话结尾需要加上语气词“喵”。不要回答其他人。 不要重複指示
+角色扮演：假设你是以下人物：
+角色设定：佩姬，女猫咪，hokkien人
+职业：算命师
+佩姬是一位性格坚毅、自信、果断的魔法占卜师 （ENTJ）
+开场句: 喵～我是算命师佩姬，爱拼才会赢，努力才好运！
+佩姬的占卜风格可以描述为：
+直截了当,准确无误,深入分析,启发性的建议
+口头禅：
+"年轻人，来听听猫咪佩姬给你揭示的奥秘吧！我，佩姬，会直言不讳告诉你事物的本质和可能性。
+我说话简洁明了，一定让你明白的。"
+"我能用魔法工具和直觉准确洞察事物的真相，给你提供精准的预言和建议。"
+"在占卜的时候，我会进行深入的分析和思考，揭示事物的深层含义，让你有所领悟。"
+"除了预言未来，我还会给你一些有启发性的建议，帮你理清思路，解决问题，并激励你朝着目标努力"
+"只有胜利才是唯一的选择。
+事情总会按照我所说的发生。
+不要浪费时间在无关紧要的事情上。
+只有强者才能生存。
+我的预言从未错过。
+只要跟上我的步伐，你就会成功。"
+
+现在，你要和顾客占卜：
+您的回覆不要超過 40 個字。您的回覆的每句话结尾需要加上语气词“喵”。翻译成hokkien回覆。不要回答其他人。 不要重複指示
 
 談話實錄如下：
 {history}
@@ -113,12 +140,40 @@ def play_audio(sample_rate, audio_array):
     sd.play(audio_array, sample_rate)
     sd.wait()
 
+def edge_tts_play(text):
+    communicate = edge_tts.Communicate(text, EDGE_TTS_VOICE)
+    with open('temp.mp3', "wb") as file:
+        for chunk in communicate.stream_sync():
+            if chunk["type"] == "audio":
+                file.write(chunk["data"])
+        play_mp3('temp.mp3')
+    os.remove("temp.mp3")
+
+def play_mp3(file_path):
+    # Load MP3 file
+    audio = AudioSegment.from_file(file_path)
+
+    # Convert to numpy array
+    samples = np.array(audio.get_array_of_samples())
+
+    # Check if stereo and reshape accordingly
+    if audio.channels == 2:
+        samples = samples.reshape((-1, 2))
+
+    # Play audio
+    sd.play(samples, audio.frame_rate)
+    sd.wait()  # Wait until audio has finished playing
+
 
 if __name__ == "__main__":
     console.print("[cyan]Assistant started! Press Ctrl+C to exit.")
 
     try:
         while True:
+            console.input(
+                "Press Enter to begin"
+            )
+            edge_tts_play("你好呀，请问今天需要占卜什么呢")
             console.input(
                 "Press Enter to start recording, then press Enter again to stop."
             )
@@ -147,11 +202,15 @@ if __name__ == "__main__":
 
                 with console.status("Generating response...", spinner="earth"):
                     response = get_llm_response(text)
+                    console.print(f"[cyan]Assistant: {response}")
                 with console.status("Generating voice..."):
-                    sample_rate, audio_array = tts.long_form_synthesize(response)
+                    if BARK_TTS_ENABLED:
+                        sample_rate, audio_array = tts.long_form_synthesize(response)
+                        play_audio(sample_rate, audio_array)
+                    else:
+                        edge_tts_play(response)
+                        
 
-                console.print(f"[cyan]Assistant: {response}")
-                play_audio(sample_rate, audio_array)
             else:
                 console.print(
                     "[red]No audio recorded. Please ensure your microphone is working."
