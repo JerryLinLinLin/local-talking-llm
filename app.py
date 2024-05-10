@@ -15,13 +15,16 @@ import edge_tts
 from playsound import playsound
 import os
 from pydub import AudioSegment
+import requests
+import json
+from io import BytesIO
 
 console = Console()
 stt = whisper.load_model("base")
 tts = TextToSpeechService()
 
 BARK_TTS_ENABLED = False
-EDGE_TTS_VOICE = "zh-TW-HsiaoYuNeural"
+EDGE_TTS_VOICE = "zh-TW-HsiaoChenNeural"
 
 try:
     nltk.data.find('tokenizers/punkt')
@@ -164,6 +167,43 @@ def play_mp3(file_path):
     sd.play(samples, audio.frame_rate)
     sd.wait()  # Wait until audio has finished playing
 
+def tts_maker_get_query(text):
+    url = 'https://api.ttsmaker.cn/v1/create-tts-order'
+    headers = {'Content-Type': 'application/json; charset=utf-8'}
+    params = {
+        'token': 'ttsmaker_demo_token',
+        'text': text,
+        'voice_id': 1513,
+        'audio_format': 'mp3',
+        'audio_speed': 1.0,
+        'audio_volume': 0,
+        'text_paragraph_pause_time': 0
+    }
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(params))
+        play_audio_from_url(response.json()['audio_file_url'])
+    except:
+        console.print_exception("tts maker errors: cannot get result audio file")
+        pass
+
+def play_audio_from_url(url):
+    # Download the audio file content from the URL
+    response = requests.get(url)
+    response.raise_for_status()  # Check if the download was successful
+
+    # Load the audio file from the in-memory bytes
+    audio = AudioSegment.from_file(BytesIO(response.content), format="mp3")
+
+    # Convert audio to numpy array
+    samples = np.array(audio.get_array_of_samples())
+    
+    # Check if stereo and reshape accordingly
+    if audio.channels == 2:
+        samples = samples.reshape((-1, 2))
+
+    # Play audio
+    sd.play(samples, audio.frame_rate)
+    sd.wait()  # Wait until audio has finished playing
 
 if __name__ == "__main__":
     console.print("[cyan]Assistant started! Press Ctrl+C to exit.")
@@ -173,7 +213,8 @@ if __name__ == "__main__":
             console.input(
                 "Press Enter to begin"
             )
-            edge_tts_play("你好呀，请问今天需要占卜什么呢")
+            # edge_tts_play("喵～我是算命师佩姬，爱拼才会赢，努力才好运！")
+            tts_maker_get_query("喵～我是算命师佩姬，爱拼才会赢，努力才好运！")
             console.input(
                 "Press Enter to start recording, then press Enter again to stop."
             )
@@ -208,7 +249,8 @@ if __name__ == "__main__":
                         sample_rate, audio_array = tts.long_form_synthesize(response)
                         play_audio(sample_rate, audio_array)
                     else:
-                        edge_tts_play(response)
+                        tts_maker_get_query(response)
+                        #edge_tts_play(response)
                         
 
             else:
