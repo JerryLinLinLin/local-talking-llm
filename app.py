@@ -293,6 +293,7 @@ if __name__ == "__main__":
             )
             keyboard.wait('1')
             console.print("key 1 pressed")
+            play_mp3("2.mp3")
 
             data_queue = Queue()  # type: ignore[var-annotated]
             stop_event = threading.Event()
