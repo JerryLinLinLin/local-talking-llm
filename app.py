@@ -267,7 +267,7 @@ if __name__ == "__main__":
             console.print("key 0 pressed")
             # edge_tts_play("喵～我是算命师佩姬，爱拼才会赢，努力才好运！")
             if count == 0:
-                tts_maker_get_query("喵～我是算命师佩姬，爱拼才会赢，努力才好运！")
+                play_mp3("0.mp3")
                 count += 1
             if count == 5:
                 count = 0
@@ -296,7 +296,7 @@ if __name__ == "__main__":
             )
 
             if audio_np.size > 0:
-                tts_maker_get_query("正在帮你算命哦，请等等，马上就好喵")
+                play_mp3("1.mp3")
                 with console.status("Transcribing...", spinner="earth"):
                     text = transcribe(audio_np)
                 console.print(f"[yellow]You: {text}")
