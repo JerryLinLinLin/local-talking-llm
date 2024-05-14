@@ -141,6 +141,8 @@ chain = ConversationChain(
     llm=Ollama(model="qwen:4b"),
 )
 
+restart_key_pressed = False
+
 
 def record_audio(stop_event, data_queue):
     """
@@ -272,9 +274,20 @@ def play_audio_from_url(url):
     sd.play(samples, audio.frame_rate)
     sd.wait()  # Wait until audio has finished playing
 
+def monitor_key_9_press():
+    global restart_key_pressed
+    while True:
+        if keyboard.is_pressed('9'):
+            restart_key_pressed = True
+        time.sleep(0.1)
+
 if __name__ == "__main__":
     console.print("[cyan]Assistant started! Press Ctrl+C to exit.")
     count = 0
+
+    monitor_thread = threading.Thread(target=monitor_key_9_press)
+    monitor_thread.daemon = True
+    monitor_thread.start()
 
     try:
         while True:
@@ -282,7 +295,7 @@ if __name__ == "__main__":
             # keyboard.wait('0')
             # console.print("key 0 pressed")
             # edge_tts_play("喵～我是算命师佩姬，爱拼才会赢，努力才好运！")
-            if count == 0:
+            if count == 0 or restart_key_pressed:
                 play_mp3("0.mp3")
                 c_memory.clear()
             if count == 5:
