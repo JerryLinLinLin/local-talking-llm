@@ -138,7 +138,7 @@ chain = ConversationChain(
     prompt=PROMPT,
     verbose=False,
     memory=c_memory,
-    llm=Ollama(model="qwen:4b"),
+    llm=Ollama(model="qwen:7b"),
 )
 
 restart_key_pressed = False
