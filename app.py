@@ -279,6 +279,7 @@ def monitor_key_9_press():
     while True:
         if keyboard.is_pressed('9'):
             restart_key_pressed = True
+            console.print("key 9 pressed")
         time.sleep(0.1)
 
 if __name__ == "__main__":
