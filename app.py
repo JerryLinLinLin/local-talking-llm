@@ -300,7 +300,7 @@ if __name__ == "__main__":
             if count == 0 or restart_key_pressed:
                 play_mp3("0.mp3")
                 c_memory.clear()
-            if count == 5:
+            if count == 4:
                 count = 0
             count += 1
             console.print(
