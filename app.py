@@ -296,6 +296,7 @@ if __name__ == "__main__":
             # keyboard.wait('0')
             # console.print("key 0 pressed")
             # edge_tts_play("喵～我是算命师佩姬，爱拼才会赢，努力才好运！")
+            console.print(count)
             if count == 0 or restart_key_pressed:
                 play_mp3("0.mp3")
                 c_memory.clear()
