@@ -303,10 +303,10 @@ if __name__ == "__main__":
                 count = 0
             count += 1
             console.print(
-                "Press 1 to start recording, then press 2 to stop."
+                "Press 0 to start recording, then press 0 to stop."
             )
-            keyboard.wait('1')
-            console.print("key 1 pressed")
+            keyboard.wait('0')
+            console.print("key 0 pressed")
             play_mp3("2.mp3")
 
             data_queue = Queue()  # type: ignore[var-annotated]
@@ -317,8 +317,8 @@ if __name__ == "__main__":
             )
             recording_thread.start()
 
-            keyboard.wait('2')
-            console.print("key 2 pressed")
+            keyboard.wait('0')
+            console.print("key 0 pressed")
             stop_event.set()
             recording_thread.join()
 
