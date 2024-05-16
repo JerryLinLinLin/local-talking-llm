@@ -29,7 +29,7 @@ url = 'https://api.ttsmaker.cn/v1/create-tts-order'
 headers = {'Content-Type': 'application/json; charset=utf-8'}
 params = {
     'token': 'ttsmaker_demo_token',
-    'text': "正在帮你占卜哦，请等等，马上就好喵",
+    'text': "喵~ 谢谢你的来访，我们下次再见！",
     'voice_id': 1513,
     'audio_format': 'mp3',
     'audio_speed': 1.0,
